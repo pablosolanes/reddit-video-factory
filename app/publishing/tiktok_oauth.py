@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import secrets
+import hashlib
+import string
 import urllib.parse
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -24,8 +26,10 @@ def run_tiktok_login(redirect_uri: str, scopes: list[str]) -> dict:
         raise TikTokOAuthError("Missing TIKTOK_CLIENT_KEY or TIKTOK_CLIENT_SECRET in .env")
 
     state = secrets.token_urlsafe(24)
+    code_verifier = _generate_code_verifier()
+    code_challenge = hashlib.sha256(code_verifier.encode("ascii")).hexdigest()
     server = _OAuthCallbackServer(redirect_uri, state)
-    auth_url = _authorization_url(client_key, redirect_uri, scopes, state)
+    auth_url = _authorization_url(client_key, redirect_uri, scopes, state, code_challenge)
 
     print(f"[TIKTOK-OAUTH] Opening browser: {auth_url}")
     webbrowser.open(auth_url)
@@ -42,6 +46,7 @@ def run_tiktok_login(redirect_uri: str, scopes: list[str]) -> dict:
         client_secret=client_secret,
         code=server.code,
         redirect_uri=redirect_uri,
+        code_verifier=code_verifier,
     )
     print("[TIKTOK-OAUTH] OK. Add these values to .env:")
     print(f"TIKTOK_ACCESS_TOKEN={token_payload.get('access_token', '')}")
@@ -52,18 +57,32 @@ def run_tiktok_login(redirect_uri: str, scopes: list[str]) -> dict:
     return token_payload
 
 
-def _authorization_url(client_key: str, redirect_uri: str, scopes: list[str], state: str) -> str:
+def _authorization_url(
+    client_key: str,
+    redirect_uri: str,
+    scopes: list[str],
+    state: str,
+    code_challenge: str,
+) -> str:
     params = {
         "client_key": client_key,
         "response_type": "code",
         "scope": ",".join(scopes),
         "redirect_uri": redirect_uri,
         "state": state,
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
     }
     return TIKTOK_AUTH_URL + "?" + urllib.parse.urlencode(params)
 
 
-def _exchange_code(client_key: str, client_secret: str, code: str, redirect_uri: str) -> dict:
+def _exchange_code(
+    client_key: str,
+    client_secret: str,
+    code: str,
+    redirect_uri: str,
+    code_verifier: str,
+) -> dict:
     response = requests.post(
         TIKTOK_TOKEN_URL,
         data={
@@ -72,6 +91,7 @@ def _exchange_code(client_key: str, client_secret: str, code: str, redirect_uri:
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": redirect_uri,
+            "code_verifier": code_verifier,
         },
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=120,
@@ -82,6 +102,11 @@ def _exchange_code(client_key: str, client_secret: str, code: str, redirect_uri:
     if "access_token" not in data:
         raise TikTokOAuthError(f"Token response did not include access_token: {data}")
     return data
+
+
+def _generate_code_verifier(length: int = 64) -> str:
+    alphabet = string.ascii_letters + string.digits + "-._~"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 class _OAuthCallbackServer:
@@ -132,4 +157,3 @@ class _OAuthCallbackServer:
                 self.wfile.write(body)
 
         return CallbackHandler
-
