@@ -86,11 +86,14 @@ Sistema de fondos ampliado:
 
 ## Instalacion En Windows
 
-1. Instala Python 3.11 o superior.
+1. Instala Python 3.11 o 3.12. Recomendado: Python 3.12.
+
+No uses Python 3.14 para este MVP: Kokoro 0.9.x requiere Python `>=3.10,<3.13`.
+
 2. Crea un entorno virtual:
 
 ```powershell
-python -m venv .venv
+py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import shutil
+import sys
 from dataclasses import dataclass
 
 from app.config import Settings
@@ -17,6 +18,7 @@ class DependencyStatus:
 
 def check_dependencies(settings: Settings) -> list[DependencyStatus]:
     checks = [
+        _python_version(),
         _python_package("yaml", "PyYAML"),
         _python_package("dotenv", "python-dotenv"),
         _python_package("praw", "praw"),
@@ -46,8 +48,19 @@ def print_dependency_report(statuses: list[DependencyStatus]) -> None:
 
 
 def has_missing_required_runtime(statuses: list[DependencyStatus]) -> bool:
-    required = {"PyYAML", "python-dotenv", "praw", "requests", "ffmpeg", "ffprobe"}
+    required = {"Python", "PyYAML", "python-dotenv", "praw", "requests", "ffmpeg", "ffprobe"}
     return any(status.name in required and not status.ok for status in statuses)
+
+
+def _python_version() -> DependencyStatus:
+    version = sys.version_info
+    ok = (3, 11) <= (version.major, version.minor) < (3, 13)
+    detail = (
+        f"{version.major}.{version.minor}.{version.micro}"
+        if ok
+        else f"{version.major}.{version.minor}.{version.micro}; install Python 3.11 or 3.12 for Kokoro compatibility"
+    )
+    return DependencyStatus("Python", ok, detail)
 
 
 def _python_package(module_name: str, display_name: str) -> DependencyStatus:
