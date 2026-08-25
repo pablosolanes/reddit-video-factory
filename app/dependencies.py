@@ -31,7 +31,10 @@ def check_dependencies(settings: Settings) -> list[DependencyStatus]:
         _env_var("REDDIT_CLIENT_ID"),
         _env_var("REDDIT_CLIENT_SECRET"),
         _env_var("REDDIT_USER_AGENT"),
+        _env_var("TIKTOK_CLIENT_KEY"),
+        _env_var("TIKTOK_CLIENT_SECRET"),
         _env_var("TIKTOK_ACCESS_TOKEN"),
+        _env_var("TIKTOK_REFRESH_TOKEN"),
     ]
     return checks
 

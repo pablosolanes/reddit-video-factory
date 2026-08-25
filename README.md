@@ -302,8 +302,25 @@ publishing:
 Variable necesaria en `.env`:
 
 ```text
+TIKTOK_CLIENT_KEY=
+TIKTOK_CLIENT_SECRET=
 TIKTOK_ACCESS_TOKEN=
+TIKTOK_REFRESH_TOKEN=
 ```
+
+Para obtener tokens con OAuth local, configura en TikTok Developers este redirect URI:
+
+```text
+http://127.0.0.1:8765/callback/
+```
+
+Despues ejecuta:
+
+```powershell
+python -m app.main --tiktok-login
+```
+
+El comando abre el navegador, espera la autorizacion en `127.0.0.1:8765` y muestra las lineas `TIKTOK_ACCESS_TOKEN` y `TIKTOK_REFRESH_TOKEN` para pegarlas en `.env`.
 
 Modo recomendado para el MVP:
 

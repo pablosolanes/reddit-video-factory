@@ -10,6 +10,7 @@ from app.database import connect, initialize_database, table_counts
 from app.dependencies import check_dependencies, has_missing_required_runtime, print_dependency_report
 from app.logging_config import configure_logging
 from app.pipeline.generate import run_pipeline
+from app.publishing.tiktok_oauth import run_tiktok_login
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test-background", action="store_true", help="Test visual profile and local background selection")
     parser.add_argument("--test-story", action="store_true", help="Test visual consistency across story parts")
     parser.add_argument("--publish-ready", action="store_true", help="Publish/upload completed videos via the configured official API")
+    parser.add_argument("--tiktok-login", action="store_true", help="Run local TikTok OAuth and print tokens for .env")
+    parser.add_argument("--tiktok-redirect-uri", default="http://127.0.0.1:8765/callback/", help="TikTok OAuth redirect URI")
     parser.add_argument("--log-level", default="INFO", help="Logging level: DEBUG, INFO, WARNING, ERROR")
     return parser.parse_args()
 
@@ -67,6 +70,10 @@ def main() -> int:
 
     if args.test_story:
         run_test_story(settings)
+        return 0
+
+    if args.tiktok_login:
+        run_tiktok_login(args.tiktok_redirect_uri, ["user.info.basic", "video.upload"])
         return 0
 
     with connect(settings.database_path) as connection:
