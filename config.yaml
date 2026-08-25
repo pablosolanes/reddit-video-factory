@@ -1,0 +1,98 @@
+app:
+  daily_videos: 3
+  language: es
+  output_dir: output
+
+reddit:
+  subreddits:
+    - AskReddit
+    - TrueOffMyChest
+    - AmItheAsshole
+    - relationship_advice
+    - tifu
+    - HistoriasDeReddit
+  optional_fiction_subreddits:
+    - nosleep
+    - WritingPrompts
+    - HFY
+  sort: hot
+  time_filter: day
+  limit_per_subreddit: 25
+  min_score: 100
+  min_length: 500
+  max_length: 15000
+  request_delay_seconds: 1.0
+  max_retries: 3
+
+llm:
+  provider: deepseek
+  model: deepseek-v4-flash
+  base_url: https://api.deepseek.com
+  temperature: 0.7
+  max_output_tokens: 4000
+  request_timeout_seconds: 120
+  max_retries: 3
+
+tts:
+  provider: kokoro
+  voice: ef_dora
+  speed: 1.0
+
+video:
+  width: 1080
+  height: 1920
+  fps: 30
+  min_duration_seconds: 60
+  max_duration_seconds: 120
+  duration_tolerance_seconds: 5
+  ffmpeg_path: ffmpeg
+  ffprobe_path: ffprobe
+  styles:
+    - style_01
+    - style_02
+    - style_03
+
+subtitles:
+  max_chars_per_line: 32
+  max_lines: 2
+  font_size: 65
+  output_dir: cache/subtitles
+
+whisper:
+  provider: faster-whisper
+  model_size: small
+  device: auto
+  compute_type: default
+  language: es
+  beam_size: 5
+
+backgrounds:
+  directory: backgrounds
+  avoid_consecutive_repeats: true
+  min_duration_seconds: 30
+  min_width: 720
+  min_height: 720
+  default_category: minecraft
+  default_style: parkour
+
+background_download:
+  enabled: false
+  min_items_per_category: 5
+  allowed_sources: []
+
+publishing:
+  enabled: false
+  provider: tiktok
+  mode: upload
+  privacy_level: SELF_ONLY
+  disable_duet: false
+  disable_comment: false
+  disable_stitch: false
+  is_aigc: true
+  chunk_size_bytes: 10000000
+  request_timeout_seconds: 120
+
+storage:
+  database_path: data/database.db
+  logs_dir: logs
+  cache_dir: cache
